@@ -1,5 +1,9 @@
 ﻿# include "stdio.h"
-#include <malloc.h>
+#include <stdlib.h>
+
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
+  #include <malloc.h> // for memalign
+#endif
 
 /*
 Алгоритм Флойда-Уоршела для сколь угодно больших графов. Единстеввное ограничение - длина максимально пути должна быть < 10^19.
@@ -11,10 +15,10 @@
 100 0 2 8
 100 100 0 7
 4 100 100 0
-Ответ 
-0 5 7 13 
-12 0 2 8 
-11 16 0 7 
+Ответ
+0 5 7 13
+12 0 2 8
+11 16 0 7
 4 9 11 0
 Компилировано на GNU C 4
 */
@@ -22,20 +26,18 @@
 
 typedef struct  cell
 {
-    
     struct cell *right;
     struct cell *down;
     struct cell *up;
     struct cell *left;
     long long value;
 } cell ;
+
 int Min(long long a, long long b)
 {
-    if(a<b)
-        return a;
-    else
-        return b;
+    return a < b ? a : b;
 }
+
 int main()
 {
     int n;
@@ -69,7 +71,7 @@ int main()
             newHead->left=NULL;
             newHead->right=NULL;
             newHead->up=NULL;
-    
+
             struct cell *newCurr=newHead;
             struct cell *newRowCell=newHead;
             struct cell *newPrev=NULL;
@@ -80,14 +82,14 @@ int main()
             while(1)
             {
                 int j;
-            for(j=0; j<b; j++)                   // создание матрицы прямоуголька NxM , где М- количество вериш для добавления, N - текущее количество вершин 
+            for(j=0; j<b; j++)                   // создание матрицы прямоуголька NxM , где М- количество вериш для добавления, N - текущее количество вершин
             {
                 newCurr->down=(cell *)malloc( sizeof(cell));
                 newCurr->down->down=NULL;
                 newCurr->down->left=NULL;
                 newCurr->down->right=NULL;
                 newCurr->down->up=NULL;
-    
+
                 newCurr->down->up=newCurr;
                 if(!wf||j==b-1)
                 {
@@ -96,7 +98,7 @@ int main()
                     newCurr->right->left=NULL;
                     newCurr->right->right=NULL;
                     newCurr->right->up=NULL;
-    
+
                     newCurr->right->left=newCurr;
                     if(wf)
                     {
@@ -192,7 +194,7 @@ int main()
 
                 }
 
-            downEnd=downEnd->up; 
+            downEnd=downEnd->up;
         while (1)                                                // "Сшивание" верхней и нижней части
         {
             downEnd->down=newHead;
@@ -204,17 +206,17 @@ int main()
             downEnd=downEnd->right;
             newHead=newHead->right;
         }
-    
+
             downEnd=newDownEnd;
 
 
         }
 
-        
-        else                              
+
+        else
         {
             int i;
-        for( i=0; i<b; i++)              //первое добавление вершин, формируется начальная квадратная матрица, которая в дальнейшем будет расширяться.    
+        for( i=0; i<b; i++)              //первое добавление вершин, формируется начальная квадратная матрица, которая в дальнейшем будет расширяться.
         {
             int j;
             for(j=0; j<b; j++)
@@ -257,7 +259,7 @@ int main()
             downEnd=rowCell;
         }
         wasFirst=1;
-    
+
     }
     }
     curr=head;
@@ -274,12 +276,12 @@ int main()
         }
         rowCell=rowCell->down;
         curr=rowCell;
-        
+
     }
     int t=0;
     t++;
 
-    
+
     struct cell *currIK=head;
     struct cell *currColumnIK=head;
     struct cell *currKJ=head;
@@ -304,7 +306,7 @@ int main()
                 widJ=widJ->right;
                 if(widJ->right==NULL)
                     break;
-                
+
             }
             rowCell=rowCell->down;
             curr=rowCell;
@@ -313,7 +315,7 @@ int main()
             widI=widI->right;
             if(widI->right==NULL)
                 break;
-            
+
         }
         currIK=currColumnIK->right;
         currColumnIK=currColumnIK->right;
@@ -323,7 +325,7 @@ int main()
         if(widK->right==NULL)
             break;
 
-    
+
     }
     curr=head;
     rowCell=head;

@@ -24,7 +24,7 @@
 */
 
 
-typedef struct  cell
+typedef struct cell
 {
     struct cell *right;
     struct cell *down;
@@ -33,7 +33,7 @@ typedef struct  cell
     long long value;
 } cell ;
 
-int Min(long long a, long long b)
+int min(long long a, long long b)
 {
     return a < b ? a : b;
 }
@@ -42,7 +42,7 @@ int main()
 {
     int n;
     //scanf("%i", &n);
-    struct cell *head=(cell *)malloc( sizeof(cell));
+    struct cell *head=(cell *) malloc( sizeof(cell));
     head->down=NULL;
     head->left=NULL;
     head->right=NULL;
@@ -300,7 +300,7 @@ int main()
             widJ=head;
             while(1)
             {
-                curr->value=Min(curr->value,currIK->value+currKJ->value);
+                curr->value=min(curr->value,currIK->value+currKJ->value);
                 currKJ=currKJ->right;
                 curr=curr->right;
                 widJ=widJ->right;

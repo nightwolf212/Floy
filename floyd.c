@@ -1,46 +1,48 @@
-# include "stdio.h"
-#include <malloc.h>
+п»ї# include "stdio.h"
+#include <stdlib.h>
+
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
+  #include <malloc.h> // for memalign
+#endif
 
 /*
-Алгоритм Флойда-Уоршела для сколь угодно больших графов. Единстеввное ограничение - длина максимально пути должна быть < 10^19.
-При необходимости, это можно исправить за один вечер. Для решения используется динамически создаваемый и полностью связный двумерный массив.
-Правильность реализации была проверена  на задаче http://informatics.mccme.ru/mod/statements/view.php?id=25, где были успешно пройдены все тесты.
-Для проверки предлагается первый тест
-Матрица смежности (4 вершины)
+РђР»РіРѕСЂРёС‚Рј Р¤Р»РѕР№РґР°-РЈРѕСЂС€РµР»Р° РґР»СЏ СЃРєРѕР»СЊ СѓРіРѕРґРЅРѕ Р±РѕР»СЊС€РёС… РіСЂР°С„РѕРІ. Р•РґРёРЅСЃС‚РµРІРІРЅРѕРµ РѕРіСЂР°РЅРёС‡РµРЅРёРµ - РґР»РёРЅР° РјР°РєСЃРёРјР°Р»СЊРЅРѕ РїСѓС‚Рё РґРѕР»Р¶РЅР° Р±С‹С‚СЊ < 10^19.
+РџСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё, СЌС‚Рѕ РјРѕР¶РЅРѕ РёСЃРїСЂР°РІРёС‚СЊ Р·Р° РѕРґРёРЅ РІРµС‡РµСЂ. Р”Р»СЏ СЂРµС€РµРЅРёСЏ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґРёРЅР°РјРёС‡РµСЃРєРё СЃРѕР·РґР°РІР°РµРјС‹Р№ Рё РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРІСЏР·РЅС‹Р№ РґРІСѓРјРµСЂРЅС‹Р№ РјР°СЃСЃРёРІ.
+РџСЂР°РІРёР»СЊРЅРѕСЃС‚СЊ СЂРµР°Р»РёР·Р°С†РёРё Р±С‹Р»Р° РїСЂРѕРІРµСЂРµРЅР°  РЅР° Р·Р°РґР°С‡Рµ http://informatics.mccme.ru/mod/statements/view.php?id=25, РіРґРµ Р±С‹Р»Рё СѓСЃРїРµС€РЅРѕ РїСЂРѕР№РґРµРЅС‹ РІСЃРµ С‚РµСЃС‚С‹.
+Р”Р»СЏ РїСЂРѕРІРµСЂРєРё РїСЂРµРґР»Р°РіР°РµС‚СЃСЏ РїРµСЂРІС‹Р№ С‚РµСЃС‚
+РњР°С‚СЂРёС†Р° СЃРјРµР¶РЅРѕСЃС‚Рё (4 РІРµСЂС€РёРЅС‹)
 0 5 9 100
 100 0 2 8
 100 100 0 7
 4 100 100 0
-Ответ 
-0 5 7 13 
-12 0 2 8 
-11 16 0 7 
+РћС‚РІРµС‚
+0 5 7 13
+12 0 2 8
+11 16 0 7
 4 9 11 0
-Компилировано на GNU C 4
+РљРѕРјРїРёР»РёСЂРѕРІР°РЅРѕ РЅР° GNU C 4
 */
 
 
-typedef struct  cell
+typedef struct cell
 {
-    
     struct cell *right;
     struct cell *down;
     struct cell *up;
     struct cell *left;
     long long value;
 } cell ;
-int Min(long long a, long long b)
+
+int min(long long a, long long b)
 {
-    if(a<b)
-        return a;
-    else
-        return b;
+    return a < b ? a : b;
 }
+
 int main()
 {
     int n;
     //scanf("%i", &n);
-    struct cell *head=(cell *)malloc( sizeof(cell));
+    struct cell *head=(cell *) malloc( sizeof(cell));
     head->down=NULL;
     head->left=NULL;
     head->right=NULL;
@@ -51,10 +53,10 @@ int main()
     struct cell *rightEnd=head;
     struct cell *downEnd=head;
     int wasFirst=0;
-    while(1)                // Добоавление вершин в матрицу смежности. Каждый раз, имеющаяся матрица смежности увеличивает количество столбцов и строк на указаное число.
+    while(1)                // Р”РѕР±РѕР°РІР»РµРЅРёРµ РІРµСЂС€РёРЅ РІ РјР°С‚СЂРёС†Сѓ СЃРјРµР¶РЅРѕСЃС‚Рё. РљР°Р¶РґС‹Р№ СЂР°Р·, РёРјРµСЋС‰Р°СЏСЃСЏ РјР°С‚СЂРёС†Р° СЃРјРµР¶РЅРѕСЃС‚Рё СѓРІРµР»РёС‡РёРІР°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚РѕР»Р±С†РѕРІ Рё СЃС‚СЂРѕРє РЅР° СѓРєР°Р·Р°РЅРѕРµ С‡РёСЃР»Рѕ.
     {
         int b;
-        printf("Укажите число вершин, которое желаете добавить ( -1  закончить ввод)\n");
+        printf("РЈРєР°Р¶РёС‚Рµ С‡РёСЃР»Рѕ РІРµСЂС€РёРЅ, РєРѕС‚РѕСЂРѕРµ Р¶РµР»Р°РµС‚Рµ РґРѕР±Р°РІРёС‚СЊ ( -1  Р·Р°РєРѕРЅС‡РёС‚СЊ РІРІРѕРґ)\n");
         scanf("%i", &b);
         if(b==-1)
             break;
@@ -62,14 +64,14 @@ int main()
         prev=NULL;
         rowCell=rightEnd;
         int cnt=0;
-        if(wasFirst)                               // Случай, если уже было произведено добавление хотя бы одной вершины.
+        if(wasFirst)                               // РЎР»СѓС‡Р°Р№, РµСЃР»Рё СѓР¶Рµ Р±С‹Р»Рѕ РїСЂРѕРёР·РІРµРґРµРЅРѕ РґРѕР±Р°РІР»РµРЅРёРµ С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕР№ РІРµСЂС€РёРЅС‹.
         {
             struct cell *newHead=(cell *)malloc( sizeof(cell));
             newHead->down=NULL;
             newHead->left=NULL;
             newHead->right=NULL;
             newHead->up=NULL;
-    
+
             struct cell *newCurr=newHead;
             struct cell *newRowCell=newHead;
             struct cell *newPrev=NULL;
@@ -80,14 +82,14 @@ int main()
             while(1)
             {
                 int j;
-            for(j=0; j<b; j++)                   // создание матрицы прямоуголька NxM , где М- количество вериш для добавления, N - текущее количество вершин 
+            for(j=0; j<b; j++)                   // СЃРѕР·РґР°РЅРёРµ РјР°С‚СЂРёС†С‹ РїСЂСЏРјРѕСѓРіРѕР»СЊРєР° NxM , РіРґРµ Рњ- РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂРёС€ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ, N - С‚РµРєСѓС‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ
             {
                 newCurr->down=(cell *)malloc( sizeof(cell));
                 newCurr->down->down=NULL;
                 newCurr->down->left=NULL;
                 newCurr->down->right=NULL;
                 newCurr->down->up=NULL;
-    
+
                 newCurr->down->up=newCurr;
                 if(!wf||j==b-1)
                 {
@@ -96,7 +98,7 @@ int main()
                     newCurr->right->left=NULL;
                     newCurr->right->right=NULL;
                     newCurr->right->up=NULL;
-    
+
                     newCurr->right->left=newCurr;
                     if(wf)
                     {
@@ -124,8 +126,8 @@ int main()
         wf=1;
         }
         rightEnd=rightEnd->left;
-        while (1)                                                  // "cшивание" двух матриц, существующая слева, сгенерированная на предыдущем этапе справа
-        {                                                           // в результате имеем половину (верхнюю) итоговой матрицы
+        while (1)                                                  // "cС€РёРІР°РЅРёРµ" РґРІСѓС… РјР°С‚СЂРёС†, СЃСѓС‰РµСЃС‚РІСѓСЋС‰Р°СЏ СЃР»РµРІР°, СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅР°СЏ РЅР° РїСЂРµРґС‹РґСѓС‰РµРј СЌС‚Р°РїРµ СЃРїСЂР°РІР°
+        {                                                           // РІ СЂРµР·СѓР»СЊС‚Р°С‚Рµ РёРјРµРµРј РїРѕР»РѕРІРёРЅСѓ (РІРµСЂС…РЅСЋСЋ) РёС‚РѕРіРѕРІРѕР№ РјР°С‚СЂРёС†С‹
             rightEnd->right=newHead;
             newHead->left=rightEnd;
             if(newHead->down->down==NULL)
@@ -136,8 +138,8 @@ int main()
         rightEnd=newRightEnd;
 
 
-             newHead=(cell *)malloc( sizeof(cell));                                 // генерация нижней половины матрицы. Данная половина будет иметь размер XxY где X - количество вершин для добавления
-             newCurr=newHead;                                   // Y = Х + Old, где Old - количество вершин в графе до добавления вершин (Y - новый размер матрицы)
+             newHead=(cell *)malloc( sizeof(cell));                                 // РіРµРЅРµСЂР°С†РёСЏ РЅРёР¶РЅРµР№ РїРѕР»РѕРІРёРЅС‹ РјР°С‚СЂРёС†С‹. Р”Р°РЅРЅР°СЏ РїРѕР»РѕРІРёРЅР° Р±СѓРґРµС‚ РёРјРµС‚СЊ СЂР°Р·РјРµСЂ XxY РіРґРµ X - РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ
+             newCurr=newHead;                                   // Y = РҐ + Old, РіРґРµ Old - РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ РІ РіСЂР°С„Рµ РґРѕ РґРѕР±Р°РІР»РµРЅРёСЏ РІРµСЂС€РёРЅ (Y - РЅРѕРІС‹Р№ СЂР°Р·РјРµСЂ РјР°С‚СЂРёС†С‹)
              newRowCell=newHead;
              newPrev=NULL;
              newHead->down=NULL;
@@ -192,8 +194,8 @@ int main()
 
                 }
 
-            downEnd=downEnd->up; 
-        while (1)                                                // "Сшивание" верхней и нижней части
+            downEnd=downEnd->up;
+        while (1)                                                // "РЎС€РёРІР°РЅРёРµ" РІРµСЂС…РЅРµР№ Рё РЅРёР¶РЅРµР№ С‡Р°СЃС‚Рё
         {
             downEnd->down=newHead;
             newHead->up=downEnd;
@@ -204,17 +206,17 @@ int main()
             downEnd=downEnd->right;
             newHead=newHead->right;
         }
-    
+
             downEnd=newDownEnd;
 
 
         }
 
-        
-        else                              
+
+        else
         {
             int i;
-        for( i=0; i<b; i++)              //первое добавление вершин, формируется начальная квадратная матрица, которая в дальнейшем будет расширяться.    
+        for( i=0; i<b; i++)              //РїРµСЂРІРѕРµ РґРѕР±Р°РІР»РµРЅРёРµ РІРµСЂС€РёРЅ, С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РЅР°С‡Р°Р»СЊРЅР°СЏ РєРІР°РґСЂР°С‚РЅР°СЏ РјР°С‚СЂРёС†Р°, РєРѕС‚РѕСЂР°СЏ РІ РґР°Р»СЊРЅРµР№С€РµРј Р±СѓРґРµС‚ СЂР°СЃС€РёСЂСЏС‚СЊСЃСЏ.
         {
             int j;
             for(j=0; j<b; j++)
@@ -257,12 +259,12 @@ int main()
             downEnd=rowCell;
         }
         wasFirst=1;
-    
+
     }
     }
     curr=head;
     rowCell=head;
-    printf("введите корректную и соответствующую указанным размерам графа матрицу смежности\n");
+    printf("РІРІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅСѓСЋ Рё СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰СѓСЋ СѓРєР°Р·Р°РЅРЅС‹Рј СЂР°Р·РјРµСЂР°Рј РіСЂР°С„Р° РјР°С‚СЂРёС†Сѓ СЃРјРµР¶РЅРѕСЃС‚Рё\n");
     while(curr->down!=NULL)
     {
         while(curr->right!=NULL)
@@ -274,12 +276,12 @@ int main()
         }
         rowCell=rowCell->down;
         curr=rowCell;
-        
+
     }
     int t=0;
     t++;
 
-    
+
     struct cell *currIK=head;
     struct cell *currColumnIK=head;
     struct cell *currKJ=head;
@@ -288,7 +290,7 @@ int main()
     struct cell *widI=head;
     struct cell *widJ=head;
 
-    while(1)                                 // Непосредственная реализация алгоритма в условиях особоый структуры хранения матрицы смежности
+    while(1)                                 // РќРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅР°СЏ СЂРµР°Р»РёР·Р°С†РёСЏ Р°Р»РіРѕСЂРёС‚РјР° РІ СѓСЃР»РѕРІРёСЏС… РѕСЃРѕР±РѕС‹Р№ СЃС‚СЂСѓРєС‚СѓСЂС‹ С…СЂР°РЅРµРЅРёСЏ РјР°С‚СЂРёС†С‹ СЃРјРµР¶РЅРѕСЃС‚Рё
     {
         curr=head;
         rowCell=head;
@@ -298,13 +300,13 @@ int main()
             widJ=head;
             while(1)
             {
-                curr->value=Min(curr->value,currIK->value+currKJ->value);
+                curr->value=min(curr->value,currIK->value+currKJ->value);
                 currKJ=currKJ->right;
                 curr=curr->right;
                 widJ=widJ->right;
                 if(widJ->right==NULL)
                     break;
-                
+
             }
             rowCell=rowCell->down;
             curr=rowCell;
@@ -313,7 +315,7 @@ int main()
             widI=widI->right;
             if(widI->right==NULL)
                 break;
-            
+
         }
         currIK=currColumnIK->right;
         currColumnIK=currColumnIK->right;
@@ -323,13 +325,13 @@ int main()
         if(widK->right==NULL)
             break;
 
-    
+
     }
     curr=head;
     rowCell=head;
     widI=head;
     widJ=head;
-    printf("Результат\n");
+    printf("Р РµР·СѓР»СЊС‚Р°С‚\n");
     while(1)
     {
         widJ=head;

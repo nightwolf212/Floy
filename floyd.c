@@ -52,12 +52,34 @@ struct cell* getNewCell(void)
 	 c->up=NULL;
 	 return c;
 }
+void constructCell(struct cell* curr, struct cell *prev, int isFirstRow, int isLastColumn)
+{
+	curr->down=getNewCell();
+	curr->down->up=curr;
+	if(isFirstRow||isLastColumn)
+	{
+		curr->right=getNewCell();
+		curr->right->left=curr;
+		if(!isFirstRow)
+		{
+			curr->right->up=curr->up->right;
+			curr->up->right->down=curr->right;
+		}
+	}
+	if(prev!=NULL)
+	{
+		prev->down->right=curr->down;
+		curr->down->left=prev->down;
+		prev->down->right->up=curr;
+	}
+}
 void addNewVertex(int cnt)
 {
 	if(head==NULL)
 	{
-		struct cell *curr=head;
 		head=getNewCell();
+		struct cell *curr=head;
+		rowCell=head;
 		rightEnd=head;
 		downEnd=head;
 	    int i;
@@ -66,25 +88,14 @@ void addNewVertex(int cnt)
             int j;
             for(j=0; j<cnt; j++)
             {
-                curr->down=getNewCell();
-                curr->down->up=curr;
-                if(i==0||j==cnt-1)
-                {
-                    curr->right=getNewCell();
-                    curr->right->left=curr;
-                    if(i!=0)
-                    {
-                        curr->right->up=curr->up->right;
-                        curr->up->right->down=curr->right;
-                    }
-                }
-                if(prev!=NULL)
-                {
-                    prev->down->right=curr->down;
-                    curr->down->left=prev->down;
-                    prev->down->right->up=curr;
-                }
-                    prev=curr;
+				int ifr=0;
+				if(i==0)
+					ifr=1;
+				int ilc=0;
+				if(j==cnt-1)
+					ilc=1;
+                constructCell(curr,prev,ifr,ilc);
+                prev=curr;
                 curr=curr->right;
                 if(i==0)
                     rightEnd=curr;
@@ -92,10 +103,8 @@ void addNewVertex(int cnt)
 			curr=rowCell->down;
 			rowCell=rowCell->down;
 			prev=NULL;
-			// if(!wasFirst)
-				 downEnd=rowCell;
+			downEnd=rowCell;
 		 }
-      //  wasFirst=1;
 
 	 }
 	else
@@ -113,36 +122,26 @@ void addNewVertex(int cnt)
                 int j;
             for(j=0; j<cnt; j++)                   // создание матрицы прямоуголька NxM , где М- количество вериш для добавления, N - текущее количество вершин
             {
-                newCurr->down=getNewCell();
-                newCurr->down->up=newCurr;
-                if(!wf||j==cnt-1)
-                {
-                    newCurr->right=getNewCell();
-                    newCurr->right->left=newCurr;
-                    if(wf)
-                    {
-                        newCurr->right->up=newCurr->up->right;
-                        newCurr->up->right->down=newCurr->right;
-                    }
-                }
-                if(newPrev!=NULL)
-                {
-                    newPrev->down->right=newCurr->down;
-                    newCurr->down->left=newPrev->down;
-                    newPrev->down->right->up=newCurr;
-                }
+				int ifr=0;
+				if(!wf)
+					ifr=1;
+				int ilc=0;
+				if(j==cnt-1)
+					ilc=1;
+
+				constructCell(newCurr,newPrev,ifr,ilc);
                 newPrev=newCurr;
                 newCurr=newCurr->right;
                 if(!wf)
                     newRightEnd=newCurr;
             }
-        newCurr=newRowCell->down;
-        newRowCell=newRowCell->down;
-        newPrev=NULL;
-        height=height->down;
-        if(height->down==NULL)
-            break;
-        wf=1;
+			newCurr=newRowCell->down;
+			newRowCell=newRowCell->down;
+			newPrev=NULL;
+			height=height->down;
+			if(height->down==NULL)
+				break;
+			wf=1;
         }
         rightEnd=rightEnd->left;
         while (1)                                                  // "cшивание" двух матриц, существующая слева, сгенерированная на предыдущем этапе справа
@@ -155,54 +154,37 @@ void addNewVertex(int cnt)
             rightEnd=rightEnd->down;
         }
         rightEnd=newRightEnd;
-
-
-             newHead=getNewCell();                                 // генерация нижней половины матрицы. Данная половина будет иметь размер XxY где X - количество вершин для добавления
-             newCurr=newHead;                                   // Y = Х + Old, где Old - количество вершин в графе до добавления вершин (Y - новый размер матрицы)
-             newRowCell=newHead;
-             newPrev=NULL;
-            
-             struct cell *newDownEnd=NULL;
-             wf=0;
-            struct cell *width=head;
-
-            for(i=0; i<cnt; i++)
+        newHead=getNewCell();                                 // генерация нижней половины матрицы. Данная половина будет иметь размер XxY где X - количество вершин для добавления
+        newCurr=newHead;                                   // Y = Х + Old, где Old - количество вершин в графе до добавления вершин (Y - новый размер матрицы)
+        newRowCell=newHead;
+        newPrev=NULL;
+        struct cell *newDownEnd=NULL;
+        wf=0;
+        struct cell *width=head;
+        for(i=0; i<cnt; i++)
+        {
+			while(1)
             {
-                while(1)
-                {
-                    newCurr->down=getNewCell();
-                    newCurr->down->up=newCurr;
-                    if(i==0||width==rightEnd->left)
-                    {
-                        newCurr->right=getNewCell();
-                        newCurr->right->left=newCurr;
-                        if(i!=0)
-                        {
-                            newCurr->right->up=newCurr->up->right;
-                            newCurr->up->right->down=newCurr->right;
-                        }
-                    }
-                    if(newPrev!=NULL)
-                    {
-                        newPrev->down->right=newCurr->down;
-                        newCurr->down->left=newPrev->down;
-                        newPrev->down->right->up=newCurr;
-                    }
-                    newPrev=newCurr;
-                    newCurr=newCurr->right;
-                    width=width->right;
-                    if(width==rightEnd)
+				int ifr=0;
+				if(i==0)
+					ifr=1;
+				int ilc=0;
+				if(width==rightEnd->left)
+					ilc=1;
+				constructCell(newCurr,newPrev,ifr,ilc);
+                newPrev=newCurr;
+                newCurr=newCurr->right;
+                width=width->right;
+                if(width==rightEnd)
                         break;
-                    }
-                    width=head;
-                    newCurr=newRowCell->down;
-                    newRowCell=newRowCell->down;
-                    newDownEnd=newRowCell;
-                    newPrev=NULL;
-
-                }
-
-            downEnd=downEnd->up;
+            }
+            width=head;
+            newCurr=newRowCell->down;
+            newRowCell=newRowCell->down;
+            newDownEnd=newRowCell;
+            newPrev=NULL;
+		}
+		downEnd=downEnd->up;
         while (1)                                                // "Сшивание" верхней и нижней части
         {
             downEnd->down=newHead;
@@ -214,44 +196,11 @@ void addNewVertex(int cnt)
             downEnd=downEnd->right;
             newHead=newHead->right;
         }
-
-            downEnd=newDownEnd;
+		downEnd=newDownEnd;
 	}
 }
-
-int main(int argc, char * argv[])
+void calculate(struct cell *hd)
 {
-	
-
-    while(1)                // Добоавление вершин в матрицу смежности. Каждый раз, имеющаяся матрица смежности увеличивает количество столбцов и строк на указаное число.
-    {
-        int b;
-        printf("Укажите число вершин, которое желаете добавить ( -1  закончить ввод)\n");
-        scanf("%i", &b);
-        if(b==-1)
-            break;
-       addNewVertex(b);
-    }
-    curr=head;
-    rowCell=head;
-    printf("введите корректную и соответствующую указанным размерам графа матрицу смежности\n");
-    while(curr->down!=NULL)
-    {
-        while(curr->right!=NULL)
-        {
-            int x;
-            scanf("%i", &x);
-            curr->value=x;
-            curr=curr->right;
-        }
-        rowCell=rowCell->down;
-        curr=rowCell;
-
-    }
-    int t=0;
-    t++;
-
-
     struct cell *currIK=head;
     struct cell *currColumnIK=head;
     struct cell *currKJ=head;
@@ -259,11 +208,11 @@ int main(int argc, char * argv[])
     struct cell *widK=head;
     struct cell *widI=head;
     struct cell *widJ=head;
-
+	
     while(1)                                 // Непосредственная реализация алгоритма в условиях особоый структуры хранения матрицы смежности
     {
-        curr=head;
-        rowCell=head;
+       struct cell *curr=head;
+        struct cell *rowCell=head;
         widI=head;
         while(1)
         {
@@ -297,15 +246,18 @@ int main(int argc, char * argv[])
 
 
     }
-    curr=head;
-    rowCell=head;
-    widI=head;
-    widJ=head;
-    printf("Результат\n");
+}
+void printMatrix(struct cell *head)
+{
+	struct cell *widI=head;
+    struct cell *widJ=head;
+    struct cell *curr=head;
+    struct cell *rowCell=head;
     while(1)
     {
         widJ=head;
-        while(1){
+        while(1)
+		{
             printf("%i ", curr->value);
             curr=curr->right;
             widJ=widJ->right;
@@ -313,13 +265,49 @@ int main(int argc, char * argv[])
                 break;
         }
 
-        printf("\n");
-            curr=rowCell->down;
-        rowCell=rowCell->down;
-        widI=widI->right;
-        if(widI->right==NULL)
-            break;
+		printf("\n");
+		curr=rowCell->down;
+		rowCell=rowCell->down;
+		widI=widI->right;
+		if(widI->right==NULL)
+			break;
     }
+}
+int main(int argc, char * argv[])
+{
+	
+
+    while(1)                // Добоавление вершин в матрицу смежности. Каждый раз, имеющаяся матрица смежности увеличивает количество столбцов и строк на указаное число.
+    {
+        int b;
+        printf("Укажите число вершин, которое желаете добавить ( -1  закончить ввод)\n");
+        scanf("%i", &b);
+        if(b==-1)
+            break;
+       addNewVertex(b);
+    }
+    struct cell *curr=head;
+    rowCell=head;
+    printf("введите корректную и соответствующую указанным размерам графа матрицу смежности\n");
+    while(curr->down!=NULL)
+    {
+        while(curr->right!=NULL)
+        {
+            int x;
+            scanf("%i", &x);
+            curr->value=x;
+            curr=curr->right;
+        }
+        rowCell=rowCell->down;
+        curr=rowCell;
+
+    }
+    int t=0;
+    t++;
+	calculate(head);
+    printf("Результат\n");
+	printMatrix(head);
+   
 
     return 0;
 }

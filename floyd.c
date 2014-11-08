@@ -1,6 +1,6 @@
 ﻿# include "stdio.h"
 #include <stdlib.h>
-
+#include<string.h>
 #if !defined(__APPLE__) && !defined(__FreeBSD__)
   #include <malloc.h> // for memalign
 #endif
@@ -73,6 +73,7 @@ void constructCell(struct cell* curr, struct cell *prev, int isFirstRow, int isL
 		prev->down->right->up=curr;
 	}
 }
+
 void addNewVertex(int cnt)
 {
 	if(head==NULL)
@@ -128,7 +129,6 @@ void addNewVertex(int cnt)
 				int ilc=0;
 				if(j==cnt-1)
 					ilc=1;
-
 				constructCell(newCurr,newPrev,ifr,ilc);
                 newPrev=newCurr;
                 newCurr=newCurr->right;
@@ -273,41 +273,103 @@ void printMatrix(struct cell *head)
 			break;
     }
 }
+long long ToInt64(char *s)
+{
+	int len=strlen(s);
+	long long tens=1;
+	long long rs=0;
+	int i;
+	for(i=len-1; i>=0; i--)
+	{
+		rs+=(s[i]-'0')*tens;
+		tens*=10;
+	}
+	return rs;
+}
+void matrixFromFile(FILE *f)
+{
+	head=getNewCell();
+	int ch=1;
+	int i=0;
+	char *p=(char *) malloc( sizeof(char));
+	struct cell *curr=head;
+	downEnd=head;
+	int isFirst=1;
+	prev=NULL;
+	while(ch!=EOF)
+	{
+		ch=fgetc(f);
+		if(ch==' ')
+		{
+			p[i]='\0';
+			long long val=ToInt64(p);
+			constructCell(curr,prev,isFirst,0);
+			curr->value=val;
+			prev=curr;
+			curr=curr->right;
+			i=0;
+			continue;
+		}
+		if(ch=='\n'|| ch=='\r')
+		{
+			
+			p[i]='\0';
+			long long val=ToInt64(p);
+			constructCell(curr,prev,isFirst,1);
+			curr->value=val;
+			prev=NULL;
+			curr=downEnd->down;
+			downEnd=downEnd->down;
+			i=0;
+			isFirst=0;
+			continue;
+		}
+		p[i]=ch;
+		i++;
+	}
+	p[i-1]='\0';
+	long long val=ToInt64(p);
+	constructCell(curr,prev,isFirst,1);
+	curr->value=val;
+}
 int main(int argc, char * argv[])
 {
 	
+	if(argc==1)
+	{
+		while(1)                // Добоавление вершин в матрицу смежности. Каждый раз, имеющаяся матрица смежности увеличивает количество столбцов и строк на указаное число.
+		{
+			int b;
+			printf("Укажите число вершин, которое желаете добавить ( -1  закончить ввод)\n");
+			scanf("%i", &b);
+			if(b==-1)
+				break;
+			addNewVertex(b);
+		}
+		struct cell *curr=head;
+		rowCell=head;
+		printf("введите корректную и соответствующую указанным размерам графа матрицу смежности\n");
+		while(curr->down!=NULL)
+		{
+			while(curr->right!=NULL)
+			{
+				int x;
+				scanf("%i", &x);
+				curr->value=x;
+				curr=curr->right;
+			}
+			rowCell=rowCell->down;
+			curr=rowCell;
 
-    while(1)                // Добоавление вершин в матрицу смежности. Каждый раз, имеющаяся матрица смежности увеличивает количество столбцов и строк на указаное число.
-    {
-        int b;
-        printf("Укажите число вершин, которое желаете добавить ( -1  закончить ввод)\n");
-        scanf("%i", &b);
-        if(b==-1)
-            break;
-       addNewVertex(b);
-    }
-    struct cell *curr=head;
-    rowCell=head;
-    printf("введите корректную и соответствующую указанным размерам графа матрицу смежности\n");
-    while(curr->down!=NULL)
-    {
-        while(curr->right!=NULL)
-        {
-            int x;
-            scanf("%i", &x);
-            curr->value=x;
-            curr=curr->right;
-        }
-        rowCell=rowCell->down;
-        curr=rowCell;
-
-    }
-    int t=0;
-    t++;
+		}
+	}
+	else 
+	{
+		FILE *f=fopen(argv[1],"r");
+		matrixFromFile(f);
+	}
 	calculate(head);
     printf("Результат\n");
 	printMatrix(head);
-   
-
     return 0;
 }
